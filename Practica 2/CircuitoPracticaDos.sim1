@@ -1,0 +1,61 @@
+<circuit version="1.1.0-SR2" rev="260312" stepSize="1000000" stepsPS="1000000" NLsteps="100000" reaStep="1000000" animate="0" >
+
+<item itemtype="MCU" CircId="p16F628-1" mainComp="false" Show_id="true" Show_Val="false" Pos="-16,-156" rotation="0" hflip="1" vflip="1" label="p16F628-1" idLabPos="0,-20" labelrot="0" valLabPos="-16,20" valLabRot="0" Frequency="20 MHz" Program="../../../Documentos/Arqui1/ArquitecturaYEsambladores1/Practica 2/prueba.hex" Auto_Load="false" saveEepr="true" Rst_enabled="true" Ext_Osc="true" Wdt_enabled="false" Clk_Out="true" MainMcu="true" SerialMon="-1" />
+
+<item itemtype="Fixed Voltage" CircId="Fixed Voltage-2" mainComp="false" Show_id="false" Show_Val="false" Pos="-148,-156" rotation="0" hflip="1" vflip="1" label="Fixed Voltage-2" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Fixed Voltage" CircId="Fixed Voltage-3" mainComp="false" Show_id="false" Show_Val="false" Pos="-148,-116" rotation="0" hflip="1" vflip="1" label="Fixed Voltage-3" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Fixed Voltage" CircId="Fixed Voltage-4" mainComp="false" Show_id="false" Show_Val="false" Pos="-148,-76" rotation="0" hflip="1" vflip="1" label="Fixed Voltage-4" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Fixed Voltage" CircId="Fixed Voltage-5" mainComp="false" Show_id="false" Show_Val="false" Pos="-148,-36" rotation="0" hflip="1" vflip="1" label="Fixed Voltage-5" idLabPos="-64,-24" labelrot="0" valLabPos="-16,8" valLabRot="0" Voltage="5 V" Out="true" />
+
+<item itemtype="Resistor" CircId="Resistor-6" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="92,-100" rotation="0" hflip="1" vflip="1" label="Resistor-6" idLabPos="-16,-24" labelrot="0" valLabPos="-10.1177,4.52941" valLabRot="0" Resistance="220 Ω" />
+
+<item itemtype="Resistor" CircId="Resistor-7" mainComp="false" ShowProp="Resistance" Show_id="false" Show_Val="true" Pos="96,-60" rotation="0" hflip="1" vflip="1" label="Resistor-7" idLabPos="-16,-24" labelrot="0" valLabPos="-16,6" valLabRot="0" Resistance="220 Ω" />
+
+<item itemtype="AudioOut" CircId="AudioOut-9" mainComp="false" Show_id="false" Show_Val="false" Pos="196,-148" rotation="0" hflip="1" vflip="1" label="AudioOut-9" idLabPos="-20,-36" labelrot="0" valLabPos="-16,20" valLabRot="0" Buzzer="false" Impedance="8 Ω" Frequency="1 kHz" />
+
+<item itemtype="Led" CircId="Led-10" mainComp="false" ShowProp="Color" Show_id="false" Show_Val="true" Pos="152,-60" rotation="0" hflip="1" vflip="1" label="Led-10" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Green" Grounded="false" Threshold="3.5 V" MaxCurrent="30 mA" Resistance="0.6 Ω" />
+
+<item itemtype="Led" CircId="Led-11" mainComp="false" ShowProp="Color" Show_id="false" Show_Val="true" Pos="152,-100" rotation="0" hflip="1" vflip="1" label="Led-11" idLabPos="-16,-24" labelrot="0" valLabPos="-16,20" valLabRot="0" Color="Red" Grounded="false" Threshold="1.8 V" MaxCurrent="30 mA" Resistance="0.6 Ω" />
+
+<item itemtype="Ground" CircId="Ground-12" mainComp="false" Show_id="false" Show_Val="false" Pos="204,0" rotation="0" hflip="1" vflip="1" label="Ground-12" idLabPos="-16,8" labelrot="0" valLabPos="-16,20" valLabRot="0" />
+
+<item itemtype="Voltage Source" CircId="Voltage Source-16" mainComp="false" ShowProp="MaxValue" Show_id="false" Show_Val="true" Pos="-280,-112" rotation="0" hflip="1" vflip="1" label="Voltage Source-16" idLabPos="-32,-48" labelrot="0" valLabPos="-8,30" valLabRot="0" Running="true" Value_Volt="5 V" MaxValue="5 V" MinValue="0 V" />
+
+<item itemtype="Node" CircId="Node-14" mainComp="false" Pos="204,-100" />
+
+<item itemtype="Node" CircId="Node-15" mainComp="false" Pos="204,-60" />
+
+<item itemtype="Connector" uid="Connector-1" startpinid="Fixed Voltage-5-outnod" endpinid="p16F628-1-PORTB3" pointList="-132,-36,-24,-36,-24,-84" />
+
+<item itemtype="Connector" uid="Connector-2" startpinid="Fixed Voltage-4-outnod" endpinid="p16F628-1-PORTB2" pointList="-132,-76,-44,-76,-44,-92,-24,-92" />
+
+<item itemtype="Connector" uid="Connector-3" startpinid="Fixed Voltage-3-outnod" endpinid="p16F628-1-PORTB1" pointList="-132,-116,-44,-116,-44,-100,-24,-100" />
+
+<item itemtype="Connector" uid="Connector-4" startpinid="Fixed Voltage-2-outnod" endpinid="p16F628-1-PORTB0" pointList="-132,-156,-36,-156,-36,-108,-24,-108" />
+
+<item itemtype="Connector" uid="Connector-7" startpinid="Resistor-6-lPin" endpinid="p16F628-1-PORTB5" pointList="76,-100,76,-92,24,-92" />
+
+<item itemtype="Connector" uid="Connector-13" startpinid="p16F628-1-PORTB4" endpinid="Resistor-7-lPin" pointList="24,-84,76,-84,76,-60,80,-60" />
+
+<item itemtype="Connector" uid="Connector-14" startpinid="p16F628-1-PORTB6" endpinid="AudioOut-9-lPin" pointList="24,-100,60,-100,60,-156,180,-156" />
+
+<item itemtype="Connector" uid="Connector-15" startpinid="Resistor-7-rPin" endpinid="Led-10-lPin" pointList="112,-60,136,-60" />
+
+<item itemtype="Connector" uid="Connector-16" startpinid="Resistor-6-rPin" endpinid="Led-11-lPin" pointList="108,-100,136,-100" />
+
+<item itemtype="Connector" uid="Connector-21" startpinid="Led-11-rPin" endpinid="Node-14-1" pointList="168,-100,204,-100" />
+
+<item itemtype="Connector" uid="Connector-22" startpinid="AudioOut-9-rPin" endpinid="Node-14-0" pointList="180,-148,180,-116,204,-116,204,-100" />
+
+<item itemtype="Connector" uid="Connector-24" startpinid="Led-10-rPin" endpinid="Node-15-1" pointList="168,-60,204,-60" />
+
+<item itemtype="Connector" uid="Connector-25" startpinid="Node-14-2" endpinid="Node-15-0" pointList="204,-100,204,-60" />
+
+<item itemtype="Connector" uid="Connector-26" startpinid="Node-15-2" endpinid="Ground-12-Gnd" pointList="204,-60,204,-16" />
+
+<item itemtype="Connector" uid="Connector-27" startpinid="Voltage Source-16-outPin" endpinid="p16F628-1-PORTA5" pointList="-252,-96,-204,-96,-204,-132,-60,-132,-60,-124,-24,-124" />
+
+</circuit>

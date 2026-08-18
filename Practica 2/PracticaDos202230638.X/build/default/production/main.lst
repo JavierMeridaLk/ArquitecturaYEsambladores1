@@ -1,0 +1,238 @@
+MPASM 5.87  /HOME/XAVI/DOCUMENTOS/ARQUI1/PRA   8-18-2026  1:47:05         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;===================================================================
+                      00002 ; PRACTICA DOS
+                      00003 ; Arquitectura de Computadoras y Ensambladores 1
+                      00004 ; Centro Universitario de Occidente - USAC - Segundo semestre 2026
+                      00005 ;
+                      00006 ;   Javier Alejandro Merida Gomez - 202230638
+                      00007 ;   
+                      00008 ; Descripcion general:
+                      00009 ; Se implementa un sistema de control para una alarma contra
+                      00010 ; incendios, el cual monitorea cuatro entradas digitales (activacion
+                      00011 ; manual, sensor de humo, sensor de temperatura y boton de silencio)
+                      00012 ; y controla tres salidas digitales (led verde, led rojo y buzzer)
+                      00013 ; de acuerdo con la logica de funcionamiento descrita en el
+                      00014 ; enunciado de la practica.
+                      00015 ;===================================================================
+                      00016 
+                      00017     LIST P=16F628A
+                      00018 
+                      00019 ;-------------------------------------------------------------------
+                      00020 ; Definicion de registros utilizados, con su direccion de memoria
+                      00021 ; (direcciones estandar de la familia de gama media PIC16)
+                      00022 ;-------------------------------------------------------------------
+  00000003            00023 STATUS  EQU 0x03      ; Registro de estado del microcontrolador
+  00000006            00024 PORTB   EQU 0x06      ; Registro de datos del puerto B (banco 0)
+  00000086            00025 TRISB   EQU 0x86      ; Registro de direccion de PORTB (banco 1)
+  00000005            00026 RP0     EQU 5          ; Bit selector de banco de memoria, ubicado en STATUS
+                      00027 
+                      00028 ;-------------------------------------------------------------------
+                      00029 ; Palabra de configuracion (Configuration Word, direccion 2007h)
+                      00030 ;
+                      00031 ; A continuacion se detalla el valor asignado a cada bit, conforme
+                      00032 ; a la hoja de datos del PIC16F627A/628A/648A (DS41196G):
+                      00033 ;
+                      00034 ;   Bit 13 (CP)     = 1  Se desactiva la proteccion del codigo de
+                      00035 ;                        programa.
+                      00036 ;   Bits 12-9       = 1  Bits no implementados; se leen siempre
+                      00037 ;                        como 1.
+                      00038 ;   Bit 8  (CPD)    = 1  Se desactiva la proteccion de la memoria
+                      00039 ;                        EEPROM de datos.
+                      00040 ;   Bit 7  (LVP)    = 0  Se desactiva la programacion en bajo
+                      00041 ;                        voltaje.
+                      00042 ;   Bit 6  (BOREN)  = 1  Se activa el Brown-out Reset.
+                      00043 ;   Bit 5  (MCLRE)  = 1  Se configura el pin RA5 con funcion de
+                      00044 ;                        reset externo (MCLR).
+                      00045 ;   Bits 4,1,0 (FOSC2:FOSC1:FOSC0) = 1,0,1
+                      00046 ;                        Se selecciona el oscilador interno (INTOSC)
+                      00047 ;                        sin salida de reloj, de manera que los
+                      00048 ;                        pines RA6 y RA7 quedan disponibles como
+                      00049 ;                        entradas o salidas de proposito general.
+                      00050 ;   Bit 3  (PWRTE)  = 0  Se activa el Power-up Timer (en este bit,
+                      00051 ;                        el valor 0 corresponde a la condicion
+                      00052 ;                        habilitada).
+                      00053 ;   Bit 2  (WDTE)   = 0  Se desactiva el Watchdog Timer.
+MPASM 5.87  /HOME/XAVI/DOCUMENTOS/ARQUI1/PRA   8-18-2026  1:47:05         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00054 ;
+                      00055 ; La combinacion de los bits anteriores produce el valor 0x3F71.
+                      00056 ; La direccion 0x2007 no se indica de forma explicita, ya que
+                      00057 ; MPASM la determina automaticamente a partir del microcontrolador
+                      00058 ; seleccionado mediante la directiva LIST P=16F628A.
+                      00059 ;-------------------------------------------------------------------
+2007   3F71           00060     __CONFIG 0x3F71
+                      00061 
+                      00062 ;-------------------------------------------------------------------
+                      00063 ; Asignacion de pines de entrada y salida (ver tabla de
+                      00064 ; identificacion de entradas y salidas en el informe)
+                      00065 ;-------------------------------------------------------------------
+                      00066 #DEFINE MANUAL      PORTB,0     ; Entrada: activacion manual
+                      00067 #DEFINE HUMO         PORTB,1     ; Entrada: sensor de humo
+                      00068 #DEFINE TEMPERATURA  PORTB,2     ; Entrada: sensor de temperatura
+                      00069 #DEFINE SILENCIO     PORTB,3     ; Entrada: boton de silencio/reconocimiento
+                      00070 #DEFINE LED_VERDE    PORTB,4     ; Salida: indicador de estado normal
+                      00071 #DEFINE LED_ROJO     PORTB,5     ; Salida: indicador de condicion de alarma
+                      00072 #DEFINE BUZZER       PORTB,6     ; Salida: senal audible de alarma
+                      00073 
+                      00074 ;===================================================================
+                      00075 ; VECTOR DE RESET
+                      00076 ; Se establece la direccion de inicio del programa en la posicion
+                      00077 ; 0x00, correspondiente al vector de reset del dispositivo.
+                      00078 ;===================================================================
+                      00079     ORG     0x00
+0000   2???           00080     GOTO    INICIO
+                      00081 
+                      00082     ORG     0x05
+                      00083 
+                      00084 ;===================================================================
+                      00085 ; INICIO
+                      00086 ; Se realiza la configuracion inicial del microcontrolador antes de
+                      00087 ; ingresar al ciclo principal del programa.
+                      00088 ;===================================================================
+0005                  00089 INICIO:
+                      00090 
+0005   1683           00091     BSF     STATUS,RP0      ; Se selecciona el banco 1 de memoria,
+                      00092                              ; requerido para modificar TRISB
+                      00093 
+0006   300F           00094     MOVLW   0x0F            ; Se define 00001111: los pines RB0-RB3
+                      00095                              ; se configuran como entradas y los
+                      00096                              ; pines RB4-RB6 como salidas
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0007   0086           00097     MOVWF   TRISB
+                      00098 
+0008   1283           00099     BCF     STATUS,RP0      ; Se retorna al banco 0 de memoria
+                      00100 
+0009   0186           00101     CLRF    PORTB            ; Se inicializan todas las salidas en
+                      00102                              ; estado bajo (apagado)
+                      00103 
+                      00104 ;===================================================================
+                      00105 ; MAIN_LOOP
+MPASM 5.87  /HOME/XAVI/DOCUMENTOS/ARQUI1/PRA   8-18-2026  1:47:05         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00106 ; Ciclo principal del programa. Se realiza la lectura continua de
+                      00107 ; las entradas y, en funcion de su estado, se determina la
+                      00108 ; condicion del sistema.
+                      00109 ;===================================================================
+000A                  00110 MAIN_LOOP:
+                      00111 
+                      00112     ; Se verifica el estado de la activacion manual. La instruccion
+                      00113     ; BTFSC omite la siguiente linea unicamente si el bit se
+                      00114     ; encuentra en 0; por lo tanto, si MANUAL = 1 se ejecuta el
+                      00115     ; salto a la rutina de alarma manual.
+000A   1806           00116     BTFSC   MANUAL
+000B   2???           00117     GOTO    ALARMA_MANUAL
+                      00118 
+                      00119     ; Se evalua la condicion conjunta de humo y temperatura. Si el
+                      00120     ; sensor de humo se encuentra en 0, no es necesario continuar
+                      00121     ; la verificacion y el sistema retorna al estado normal.
+000C   1C86           00122     BTFSS   HUMO
+000D   2???           00123     GOTO    NORMAL
+                      00124 
+                      00125     ; Se verifica el sensor de temperatura. Si su valor es 0, el
+                      00126     ; sistema tambien retorna al estado normal.
+000E   1D06           00127     BTFSS   TEMPERATURA
+000F   2???           00128     GOTO    NORMAL
+                      00129 
+                      00130     ; En caso de que ambos sensores indiquen una condicion de
+                      00131     ; riesgo, se ejecuta la rutina correspondiente a la alarma
+                      00132     ; activada por sensores.
+0010   2???           00133     GOTO    ALARMA_SENSOR
+                      00134 
+                      00135 ;-------------------------------------------------------------------
+                      00136 ; NORMAL
+                      00137 ; Se establece el estado normal del sistema, sin condiciones de
+                      00138 ; riesgo presentes.
+                      00139 ;-------------------------------------------------------------------
+0011                  00140 NORMAL:
+0011   1606           00141     BSF     LED_VERDE        ; Se enciende el led verde
+0012   1286           00142     BCF     LED_ROJO         ; Se apaga el led rojo
+0013   1306           00143     BCF     BUZZER           ; Se desactiva el buzzer
+0014   2???           00144     GOTO    MAIN_LOOP
+                      00145 
+                      00146 ;-------------------------------------------------------------------
+                      00147 ; ALARMA_MANUAL
+                      00148 ; Se atiende la condicion de activacion manual, la cual tiene
+                      00149 ; prioridad sobre las demas entradas del sistema. En este estado,
+                      00150 ; el buzzer permanece activo de forma permanente, sin posibilidad
+                      00151 ; de ser silenciado.
+                      00152 ;-------------------------------------------------------------------
+0015                  00153 ALARMA_MANUAL:
+0015   1206           00154     BCF     LED_VERDE
+0016   1686           00155     BSF     LED_ROJO
+0017   1706           00156     BSF     BUZZER
+0018   2???           00157     GOTO    MAIN_LOOP
+                      00158 
+MPASM 5.87  /HOME/XAVI/DOCUMENTOS/ARQUI1/PRA   8-18-2026  1:47:05         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00159 ;-------------------------------------------------------------------
+                      00160 ; ALARMA_SENSOR
+                      00161 ; Se atiende la condicion de riesgo detectada por los sensores de
+                      00162 ; humo y temperatura. El led rojo permanece encendido mientras la
+                      00163 ; condicion de riesgo se mantenga presente, independientemente del
+                      00164 ; estado del boton de silencio.
+                      00165 ;-------------------------------------------------------------------
+0019                  00166 ALARMA_SENSOR:
+0019   1206           00167     BCF     LED_VERDE
+001A   1686           00168     BSF     LED_ROJO
+                      00169 
+                      00170     ; Se verifica el estado del boton de silencio. Si SILENCIO = 1,
+                      00171     ; se desactiva el buzzer sin modificar el estado del led rojo.
+001B   1986           00172     BTFSC   SILENCIO
+001C   2???           00173     GOTO    SIL_ON
+                      00174 
+001D   1706           00175     BSF     BUZZER
+001E   2???           00176     GOTO    MAIN_LOOP
+                      00177 
+001F                  00178 SIL_ON:
+001F   1306           00179     BCF     BUZZER            ; Se silencia el buzzer por
+                      00180                               ; solicitud del usuario
+0020   2???           00181     GOTO    MAIN_LOOP
+                      00182 
+3F71                  00183     END
+MPASM 5.87  /HOME/XAVI/DOCUMENTOS/ARQUI1/PRA   8-18-2026  1:47:05         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ALARMA_MANUAL                     00000015
+ALARMA_SENSOR                     00000019
+BUZZER                            PORTB,6
+HUMO                              PORTB,1
+INICIO                            00000005
+LED_ROJO                          PORTB,5
+LED_VERDE                         PORTB,4
+MAIN_LOOP                         0000000A
+MANUAL                            PORTB,0
+NORMAL                            00000011
+PORTB                             00000006
+RP0                               00000005
+SILENCIO                          PORTB,3
+SIL_ON                            0000001F
+STATUS                            00000003
+TEMPERATURA                       PORTB,2
+TRISB                             00000086
+__16F628A                         00000001
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+
